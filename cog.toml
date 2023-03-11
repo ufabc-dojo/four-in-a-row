@@ -1,0 +1,10 @@
+tag_prefix = "v"
+
+[commit_types]
+
+[changelog]
+path = "CHANGELOG.md"
+template = ".changelog_template"
+authors = [{ username = "GrayJack", signature = "Eric Shimizu Karbstein" }]
+
+[bump_profiles]
