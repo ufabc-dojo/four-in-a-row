@@ -146,8 +146,14 @@ strategy's output stream is buffered and has to be flushed.
 import argparse
 import subprocess
 import sys
+from pathlib import Path
 from typing import Literal
 
+# Type Aliases
+Board = str | tuple[str]
+Player = Literal["@", "O"]
+
+# Constants
 EMPTY = "."
 PLAYER1 = "@"
 PLAYER2 = "O"
@@ -168,17 +174,17 @@ so = 9
 se = 10
 
 
-def opponent(player: Literal["@", "O"]) -> Literal["@", "O"]:
+def opponent(player: Player) -> Player:
     """Return the oponent of a given `player`."""
     return PLAYER1 if player == PLAYER2 else PLAYER2
 
 
-def make_board() -> str:
+def make_board() -> Board:
     """Create the game board."""
     return "".join(EMPTY if s in ALL_SQUARES else OUTER for s in range(72))
 
 
-def print_board(board: str) -> str:
+def print_board(board: Board) -> Board:
     """Print the game board and return the board itself."""
     print("1 2 3 4 5 6 7")
     for row in range(1, 7):
@@ -190,20 +196,20 @@ def print_board(board: str) -> str:
 
 def is_valid(move: int) -> bool:
     """Check if a given `move` is valid."""
-    return isinstance(move, int) and MAX_MOVE_VALUE <= move <= MAX_MOVE_VALUE
+    return isinstance(move, int) and MIN_MOVE_VALUE <= move <= MAX_MOVE_VALUE
 
 
-def is_legal(move: int, board: str) -> int | None:
+def is_legal(move: int, board: Board) -> int | None:
     """Check if the move is legal and return the square where the piece will be placed."""
     return find_empty_square(move, board)
 
 
-def is_any_legal_move(board: str) -> bool:
+def is_any_legal_move(board: Board) -> bool:
     """Check if there are any legal moves left."""
     return any(board[s] == EMPTY for s in TOP_SQUARES)
 
 
-def find_empty_square(column: int, board: str) -> int | None:
+def find_empty_square(column: int, board: Board) -> int | None:
     """Find the empty square in a given `column`."""
     square = 54 + column
     while board[square] != OUTER:
@@ -213,16 +219,16 @@ def find_empty_square(column: int, board: str) -> int | None:
     return None
 
 
-def make_move(move: int, player: Literal["@", "O"], board: str) -> tuple[str, int | None]:
+def make_move(move: int, player: Player, board: Board) -> tuple[Board, int | None]:
     """Make a given `move` and returns a tuple of the new board and the square where the piece was placed."""
     empty_square = find_empty_square(move, board)
     return (
-        str(piece if square != empty_square else player for square, piece in enumerate(board)),
+        tuple(piece if square != empty_square else player for square, piece in enumerate(board)),
         empty_square,
     )
 
 
-def is_four_in_a_row(square: int, board: str) -> bool:
+def is_four_in_a_row(square: int, board: Board) -> bool:
     """Check for the presence of four pieces in a row around a given `square`."""
     piece = board[square]
 
@@ -240,12 +246,12 @@ def is_four_in_a_row(square: int, board: str) -> bool:
     return any(test_row(*d) for d in ((no, so), (ea, we), (ne, sw), (se, nw)))
 
 
-def player_squares(player: Literal["@", "O"], board: str) -> tuple[int, ...]:
+def player_squares(player: Player, board: Board) -> tuple[int, ...]:
     """Get all squares that belongs to a given `player`."""
     return tuple(s for s in ALL_SQUARES if board[s] == player)
 
 
-def board_to_string(board: str) -> str:
+def board_to_string(board: Board) -> str:
     """Convert the board to a string."""
     return "".join(board[s] for s in ALL_SQUARES)
 
@@ -254,21 +260,24 @@ class Strategy(subprocess.Popen):
     """Class for the external program that implements the strategy logic."""
 
     def __init__(self, filename: str) -> None:
-        subprocess.Popen(
+        subprocess.Popen.__init__(
+            self,
             [filename],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
+            shell=True,
         )
 
-    def get_move(self, player: Literal["@", "O"], board: str) -> int:
+    def get_move(self, player: Player, board: Board) -> int:
         """Get the move of the strategy."""
         print(f"{player} {board_to_string(board)}", file=self.stdin, flush=True)
         if self.stdout is not None:
-            return int(self.stdout.readline())
+            response = self.stdout.readline()
+            return int(response)
         else:
-            print("No stdout set.", file=self.stderr, flush=True)
+            print("No stdout set.", file=sys.stderr, flush=True)
             self.kill()
             sys.exit(1)
 
@@ -279,7 +288,7 @@ class Strategy(subprocess.Popen):
 def four_in_a_row(strategy1: Strategy, strategy2: Strategy, is_print: bool = True) -> None:
     """Play a game of four in a row between two strategies."""
 
-    def play_turn(player: Literal["@", "O"], board: str) -> tuple[Literal[-1, 0, 1], str]:
+    def play_turn(player: Player, board: Board) -> tuple[Literal[-1, 0, 1], Board]:
         if is_print:
             print_board(board)
         if is_any_legal_move(board):
