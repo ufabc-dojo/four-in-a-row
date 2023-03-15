@@ -1,4 +1,4 @@
-#!env guile -s
+#!/usr/bin/env guile -s
 !#
 
 ; Copyright (C) 2023  Diogo F. S. Ramos and UFABC Dojo Members

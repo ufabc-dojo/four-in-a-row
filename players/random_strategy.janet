@@ -1,4 +1,4 @@
-#!env janet
+#!/usr/bin/env janet
 
 # Copyright (C) 2023  Diogo F. S. Ramos and UFABC Dojo Members
 

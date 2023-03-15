@@ -1,3 +1,13 @@
+[project]
+name = "fiar"
+version = "0.1.0"
+authors = [{ name = "UFABC Dojo Members" }, { name = "Diogo F. S. Ramos" }]
+description = "Four in a Row Game"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["argparse >= 1.4.0"]
+
 [tool.ruff]
 extend-select = [
     "F",
