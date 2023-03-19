@@ -146,7 +146,6 @@ strategy's output stream is buffered and has to be flushed.
 import argparse
 import subprocess
 import sys
-from pathlib import Path
 from typing import Literal
 
 # Type Aliases
