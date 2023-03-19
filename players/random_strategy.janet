@@ -1,6 +1,6 @@
 #!/usr/bin/env janet
 
-# Copyright (C) 2023  Diogo F. S. Ramos and UFABC Dojo Members
+# Copyright (C) 2023  UFABC Dojo Members
 
 (def EMPTY ".")
 (def ALL_MOVES (range 1 8))
