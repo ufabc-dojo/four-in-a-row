@@ -258,7 +258,7 @@ def board_to_string(board: Board) -> str:
 class Strategy(subprocess.Popen):
     """Class for the external program that implements the strategy logic."""
 
-    def __init__(self, filename: str) -> None:
+    def __init__(self, filename: str) -> None:  # noqa: D107
         subprocess.Popen.__init__(
             self,
             [filename],
@@ -272,15 +272,14 @@ class Strategy(subprocess.Popen):
     def get_move(self, player: Player, board: Board) -> int:
         """Get the move of the strategy."""
         print(f"{player} {board_to_string(board)}", file=self.stdin, flush=True)
-        if self.stdout is not None:
-            response = self.stdout.readline()
-            return int(response)
-        else:
+        if self.stdout is None:
             print("No stdout set.", file=sys.stderr, flush=True)
             self.kill()
             sys.exit(1)
+        response = self.stdout.readline()
+        return int(response)
 
-    def __exit__(self, _exc_type, _exc_value, _traceback):
+    def __exit__(self, _exc_type, _exc_value, _traceback) -> None:  # noqa: ANN001, D105
         self.kill()
 
 
