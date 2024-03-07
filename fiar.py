@@ -149,13 +149,13 @@ import sys
 from typing import Literal
 
 # Type Aliases
-Board = str | tuple[str]
+Board = str | tuple[str, ...]
 Player = Literal["@", "O"]
 
 # Constants
 EMPTY = "."
-PLAYER1 = "@"
-PLAYER2 = "O"
+PLAYER1: Player = "@"
+PLAYER2: Player = "O"
 OUTER = "?"
 MIN_MOVE_VALUE = 1
 MAX_MOVE_VALUE = 7
@@ -221,8 +221,11 @@ def find_empty_square(column: int, board: Board) -> int | None:
 def make_move(move: int, player: Player, board: Board) -> tuple[Board, int | None]:
     """Make a given `move` and returns a tuple of the new board and the square where the piece was placed."""
     empty_square = find_empty_square(move, board)
+    new_board = tuple(
+        piece if square != empty_square else player for square, piece in enumerate(board)
+    )
     return (
-        tuple(piece if square != empty_square else player for square, piece in enumerate(board)),
+        new_board,  # Convert the new_board tuple to a string
         empty_square,
     )
 
@@ -240,7 +243,7 @@ def is_four_in_a_row(square: int, board: Board) -> bool:
                 s += direction
             return count
 
-        return test_direction(dir1) + test_direction(dir2) >= 3
+        return test_direction(dir1) + test_direction(dir2) >= 3  # noqa: PLR2004
 
     return any(test_row(*d) for d in ((no, so), (ea, we), (ne, sw), (se, nw)))
 
@@ -266,7 +269,6 @@ class Strategy(subprocess.Popen):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
-            shell=True,
         )
 
     def get_move(self, player: Player, board: Board) -> int:
